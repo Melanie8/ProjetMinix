@@ -1,0 +1,91 @@
+Implémentation de l’appel système getpidinfo
+—————————————————————————————————————————————
+—————————————————————————————————————————————
+ssh identifiant@studssh.info.ucl.ac.be
+[mot de passe]
+ssh volcan01
+[mot de passe]
+[se placer dans le répertoire de minix]
+
+FICHIER : ~/src/include/minix/callnr.h
+Repérer un numéro non utilisé (32)
+Ajouter <#define GETPIDINFO	  32>
+
+
+FICHIER : ~/src/servers/pm/table.c
+Ajouter <do_getpidinfo,	/* 32 = getpidinfo */>
+
+
+FICHIER : ~/src/servers/pm/proto.h
+Ajouter <_PROTOTYPE( int do_getpidinfo,(void)					);> dans la section /* misc.c */
+
+
+FICHIER : ~/src/server/pm/misc.c
+Ajouter le code ci-dessous; attention à ne pas utiliser de commentaire //, donc seulement  des /* text */. On peut s’inspirer de la fonction do_getepinfo, qui ressemble sur plusieurs points (elle utilise aussi mp, elle fonctionne aussi par messages et met à jour errno).
+/*===========================================================================*
+ *				do_getpidinfo				     *
+ *===========================================================================*/
+PUBLIC int do_getpidinfo(void)
+{
+  /* mproc est aussi variable ext!! (mproc) */
+  pid_t me, parent;
+
+  /* Get pid and ppid */
+  me = mp->mp_pid;
+  parent = mproc[mp->mp_parent].mp_pid;
+
+  /* Message */
+  if (mp->mp_flags & IN_USE) {
+	mp->mp_reply.reply_res2 = me;
+	mp->mp_reply.reply_res3 = parent;
+  	return(OK);
+  }
+
+  /* Inactive process */
+  return(ESRCH);
+}
+
+A cette étape, il faut comprendre plusieurs choses. Le répertoire pm/ contient full fichiers .h. Voici un aperçu:
+
+glo.h : contient toutes les variables globales. C’est ici qu’est déclaré struct mproc *mp qui est la *table* du processus courant contenant toutes ses infos. Cette structure est définie ailleurs, mais retenons que comme ell est déclarée externe ici, on ne doit plus la déclarer et la chercher pour notre appel.
+
+mproc.h : c’est ici que struct mproc *mp est définie. Vaut la peine d’être lu. On se rend compte que c’est une table de structure qui contient tous les processus. mp (voir ci-dessus) pointe sur l’entrée du processus courant. A l’intérieur de la structure, on retrouve les champs pid_t mp_pid et int mp_parent qui donne respectivement le pid du processus et l’index dans mproc[NR_PROCS] de son parent. Autre chose d’important : message mp_reply. Pour comprendre ce champ, il faut savoir que tout appel système est appelé comme ceci : _syscall(PM_PROC_NR, PROC_NAME, &m); avec comme arguments la table qui donne les numéros au appels systèmes (je crois), le nom de l’appel système et le pointeur d’un message. mp_reply (le message) contient lui-même plusieurs champs.
+
+param.h : contient des définitions des champs d’un message. On s’intéresse à reply_res2 et reply_res3, dans lesquels on peut placer des int pour un retour de données multiples (chez nous donc pid et ppid).
+
+type.h : ne contient rien. C’est ici qu’on ajoute la définiton de la nouvelle structure.
+struct pid_s {
+	pid_t me;
+	pid_t parent;
+};
+
+pm.h : master-fichier-header. Tous les fichiers .c du dossier l’includent.
+
+
+make (dans le dossier ~/src/server/pm/)
+
+
+—————————————————————————————————————————————
+A ce stade, l’appel système existe et il faut le rendre accessible aux utilisateurs de manière plus aisée que par _syscall(…).
+
+
+FICHIER : ~/src/lib/libc/other
+Il y a plusieurs dossier de librairie, mais celui-ci me paraissait le plus approprié pour notre appel système. C’est ici qu’est utilisé getepinfo (_getngid.c, _getnuid.c,…).
+Ajouter un nouveau fichier getpidinfo.c :
+
+#include <lib.h>
+#include <unistd.h>
+
+PUBLIC int getpidinfo(struct pid_s *pids)
+{
+  message m;
+
+  if (_syscall(PM_PROC_NR, GETPIDINFO, &m) < 0) return ( (pid_t) -1);
+  pids->me = (pid_t) m.m2_i1;
+  pids->parent = (pid_t) m.m2_i2;
+
+  return OK;
+} 
+
+
+
