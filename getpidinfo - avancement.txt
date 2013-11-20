@@ -53,16 +53,20 @@ mproc.h : c’est ici que struct mproc *mp est définie. Vaut la peine d’être
 
 param.h : contient des définitions des champs d’un message. On s’intéresse à reply_res2 et reply_res3, dans lesquels on peut placer des int pour un retour de données multiples (chez nous donc pid et ppid).
 
-type.h : ne contient rien. C’est ici qu’on ajoute la définiton de la nouvelle structure.
+pm.h : master-fichier-header. Tous les fichiers .c du dossier l’includent.
+
+
+FICHIER : ~/src/include/minix/type.h : C’est ici qu’on ajoute la définiton de la nouvelle structure.
 struct pid_s {
 	pid_t me;
 	pid_t parent;
 };
 
-pm.h : master-fichier-header. Tous les fichiers .c du dossier l’includent.
 
-
+(dans le dossier minix)
+make run
 make (dans le dossier ~/src/server/pm/)
+resortir
 
 
 —————————————————————————————————————————————
@@ -85,7 +89,13 @@ PUBLIC int getpidinfo(struct pid_s *pids)
   pids->parent = (pid_t) m.m2_i2;
 
   return OK;
-} 
+}
 
+FICHIER : ~/src/lib/libc/other/Makefile.inc
+Ajouter <getpidinfo.c \> dans la liste
+
+
+EDIT : mes tests semblent ne pas bien détecter la déclaration de la structure… A revoir.
+EDIT2 : je dois revoir l’endroit de déclarer le code c de getpidinfo…
 
 
