@@ -32,8 +32,10 @@ dans la section /* misc.c */\
 \
 \
 FICHIER : \cf2 ~/src/server/pm/misc.c\cf0 \
-Ajouter le code ci-dessous; attention \'e0 ne pas utiliser de commentaire //, donc seulement  des /* text */. On peut s\'92inspirer de la fonction do_getepinfo, qui ressemble sur plusieurs points (elle utilise aussi mp, elle fonctionne aussi par messages et met \'e0 jour errno).\
-\cf3 /*===========================================================================*\
+Ajouter le code ci-dessous; attention \'e0 ne pas utiliser de commentaire //, donc seulement  des /* text */. On peut s\'92inspirer de la fonction do_getepinfo dans le m\'eame fichier, qui ressemble sur plusieurs points (elle utilise aussi mp, elle fonctionne aussi par messages et met \'e0 jour errno), et de ce qui se trouve dans getset.c.\
+\
+1er essai\
+/*===========================================================================*\
  *				do_getpidinfo						                                                          *\
  *===========================================================================*/\
 PUBLIC int do_getpidinfo(void)\
@@ -55,12 +57,65 @@ PUBLIC int do_getpidinfo(void)\
   /* Inactive process */\
   return(ESRCH);\
 \}\
+\
+2e essai\
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural
+\cf0 \CocoaLigature0 /*===========================================================================*\
+ *				do_getpidinfo				     *\
+ *===========================================================================*/\
+PUBLIC int do_getpidinfo()\
+\{\
+  /* mproc is an extern variable */\
+\
+  pid_t me, parent;\
+\
+  /* Get pid and ppid */\
+  me = mproc[who_p].mp_pid;\
+  parent = mproc[mp->mp_parent].mp_pid;\
+\
+  /* Message */\
+  if (mp->mp_flags & IN_USE) \{\
+	mp->mp_reply.reply_res2 = me;\
+	mp->mp_reply.reply_res3 = parent;\
+  	return(OK);\
+  \}\
+\
+  /* Inactive process */\
+  return(ESRCH);\
+\}\
+\
+3e essai\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural
+\cf3 /*===========================================================================*\
+ *				do_getpidinfo				     *\
+ *===========================================================================*/\
+PUBLIC int do_getpidinfo()\
+\{\
+  /* mproc is an extern variable */\
+\
+  /* Message */\
+  if (mp->mp_flags & IN_USE) \{\
+	printf("entered system call\\n");\
+\
+	mp->mp_reply.reply_res2 = mproc[who_p].mp_pid;\
+	mp->mp_reply.reply_res3 = mproc[mp->mp_parent].mp_pid;\
+\
+	printf("successful system call\\n");\
+  	return(OK);\
+  \}\
+\
+  /* Inactive process */\
+  return(ESRCH);\
+\}\CocoaLigature1 \
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural
 \cf0 \
 A cette \'e9tape, il faut comprendre plusieurs choses. Le r\'e9pertoire pm/ contient full fichiers .h. Voici un aper\'e7u:\
 \
 glo.h : contient toutes les variables globales. C\'92est ici qu\'92est d\'e9clar\'e9 struct mproc *mp qui est la *table* du processus courant contenant toutes ses infos. Cette structure est d\'e9finie ailleurs, mais retenons que comme ell est d\'e9clar\'e9e externe ici, on ne doit plus la d\'e9clarer et la chercher pour notre appel.\
 \
 mproc.h : c\'92est ici que struct mproc *mp est d\'e9finie. Vaut la peine d\'92\'eatre lu. On se rend compte que c\'92est une table de structure qui contient tous les processus. mp (voir ci-dessus) pointe sur l\'92entr\'e9e du processus courant. A l\'92int\'e9rieur de la structure, on retrouve les champs pid_t mp_pid et int mp_parent qui donne respectivement le pid du processus et l\'92index dans mproc[NR_PROCS] de son parent. Autre chose d\'92important : message mp_reply. Pour comprendre ce champ, il faut savoir que tout appel syst\'e8me est appel\'e9 comme ceci : _syscall(PM_PROC_NR, PROC_NAME, &m); avec comme arguments la table qui donne les num\'e9ros au appels syst\'e8mes (je crois), le nom de l\'92appel syst\'e8me et le pointeur d\'92un message. mp_reply (le message) contient lui-m\'eame plusieurs champs.\
+Endroit de mp et de mproc[]!!!!!\
 \
 param.h : contient des d\'e9finitions des champs d\'92un message. On s\'92int\'e9resse \'e0 reply_res2 et reply_res3, dans lesquels on peut placer des int pour un retour de donn\'e9es multiples (chez nous donc pid et ppid).\
 \
@@ -80,18 +135,18 @@ cd /usr/src/servers/pm/\
 make\
 (resortir)\
 \
-\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural
-\cf0 \'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\
+\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\
 \
 A ce stade, l\'92appel syst\'e8me existe et il faut le rendre accessible aux utilisateurs de mani\'e8re plus ais\'e9e que par _syscall(\'85).\
-\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural
-\cf0 \
+\
 \
 FICHIER : \cf2 ~/src/lib/libc/other\cf0 \
 Il y a plusieurs dossiers de librairie, mais celui-ci me paraissait le plus appropri\'e9 pour notre appel syst\'e8me. C\'92est ici qu\'92est utilis\'e9 getepinfo, pas en tant que tel mais pour plusieurs sous-fonctions (_getngid.c, _getnuid.c,\'85).\
-Ajouter un nouveau fichier \cf2 getpidinfo.c\cf0  :\
+Ajouter un nouveau fichier _\cf2 getpidinfo.c\cf0  :\
 \
-\cf3 #include <lib.h>\
+1er essai : \
+\
+#include <lib.h>\
 #include <unistd.h>\
 \
 PUBLIC int getpidinfo(struct pid_s *pids)\
@@ -105,10 +160,10 @@ PUBLIC int getpidinfo(struct pid_s *pids)\
   return OK;\
 \}\
 \
-\cf0 2\'e8me essai : \cf3 \
+2\'e8me essai : \
 \
 \pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural
-\cf3 \CocoaLigature0 #include <lib.h>\
+\cf0 \CocoaLigature0 #include <lib.h>\
 #include <unistd.h>\
 \
 PUBLIC int getpidinfo(struct pid_s *pids)\
@@ -123,31 +178,68 @@ PUBLIC int getpidinfo(struct pid_s *pids)\
   \}\
 \
   return result;\
-\} \cf4 \CocoaLigature1 \
+\} \
+\
+3\'e8me essai : \cf3 \
+\
+#include <lib.h>\
+#define getpidinfo _getpidinfo\
+#include <unistd.h>\
+\
+PUBLIC int getpidinfo(struct pid_s *pids)\
+\{  \
+  message m;\
+  int result;\
+\
+  printf("entered user call\\n");\
+\
+  result = _syscall(PM_PROC_NR, GETPIDINFO, &m);\
+  if (result > 0) \{\
+	pids->me = (pid_t) m.m2_i1;\
+	pids->parent = (pid_t) m.m2_i2;\
+\
+	printf("m.m2_i1 %d\\n", m.m2_i1);\
+	printf("m.m2_i2 %d\\n", m.m2_i2);\
+\
+	printf("pids->me %d, pids.me %d\\n", pids->me, pids.me);\
+	printf("pids->parent %d, pids.parent %d\\n", pids->parent, pids.parent);\
+\
+  \}\
+\
+  return result;\
+\} \
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural
+\cf4 \CocoaLigature1 \
 \pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural
 \cf0 \
 FICHIER : \cf2 ~/src/lib/libc/other/Makefile.inc\cf0 \
-Ajouter \cf3 getpidinfo.c \\\cf0  dans la liste\
+Ajouter \cf3 _getpidinfo.c \\\cf0  dans la liste\
 \
 \
 FICHIER : \cf2 ~/src/include/unistd.h\
-\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural
 \cf0 Ajouter\cf3  _PROTOTYPE( int getpidinfo, (struct pid_s *pids)		);\
+\
+\
+\cf0 FICHIER : \cf2 ~/src/lib/libc/syscall\cf0 \
+Ajouter un fichier \cf2 getpidinfo.S\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural
+\cf3 \CocoaLigature0 #include <machine/asm.h>\
+\
+IMPORT(_getpidinfo)\
+ENTRY(getpidinfo)\
+	jmp	_C_LABEL(_getpidinfo)\cf2 \CocoaLigature1 \
 \pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural
-\cf0 \
-\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural
-\cf0 \'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\
+\cf3 \
+\cf0 FICHIER : \cf2 ~/src/include/Makefile.inc\cf0 \
+Ajouter getpidinfo\'85\
+\
+\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\
 \
 (dans le dossier o\'f9 se trouve minix)\
 make run\
 ./update_minix \
 cd /usr/src/tools\
 make hdboot libraries\
-\
-\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural
-\cf0 \
-EDIT : mes tests semblent ne pas bien d\'e9tecter la d\'e9claration de la structure\'85 A revoir.\
-EDIT2 : je dois revoir l\'92endroit de d\'e9clarer le code c de getpidinfo\'85\
 \
 \
 }
