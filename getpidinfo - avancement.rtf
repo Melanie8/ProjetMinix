@@ -1,9 +1,9 @@
 {\rtf1\ansi\ansicpg1252\cocoartf1187\cocoasubrtf400
 {\fonttbl\f0\fswiss\fcharset0 Helvetica;}
-{\colortbl;\red255\green255\blue255;\red63\green105\blue30;\red221\green32\blue103;\red168\green24\blue75;
-}
+{\colortbl;\red255\green255\blue255;\red63\green105\blue30;\red221\green32\blue103;\red98\green147\blue254;
+\red168\green24\blue75;}
 {\info
-{\author Lena Peschke}}\paperw11905\paperh16837\margl1440\margr1440\vieww16880\viewh13080\viewkind0
+{\author Lena Peschke}}\paperw11905\paperh16837\margl1440\margr1440\vieww16880\viewh9440\viewkind0
 \pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\qc
 
 \f0\fs24 \cf0 Impl\'e9mentation de l\'92appel syst\'e8me getpidinfo\
@@ -194,7 +194,7 @@ PUBLIC int getpidinfo(struct pid_s *pids)\
   printf("entered user call\\n");\
 \
   result = _syscall(PM_PROC_NR, GETPIDINFO, &m);\
-  if (result > 0) \{\
+  if (result \cf4 >=\cf3  0) \{\
 	pids->me = (pid_t) m.m2_i1;\
 	pids->parent = (pid_t) m.m2_i2;\
 \
@@ -209,7 +209,7 @@ PUBLIC int getpidinfo(struct pid_s *pids)\
   return result;\
 \} \
 \pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural
-\cf4 \CocoaLigature1 \
+\cf5 \CocoaLigature1 \
 \pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural
 \cf0 \
 FICHIER : \cf2 ~/src/lib/libc/other/Makefile.inc\cf0 \
@@ -240,9 +240,20 @@ Ajouter \cf3 getpidinfo.S \\\cf0 \
 (dans le dossier o\'f9 se trouve minix)\
 make run\
 ./update_minix -> inclure les modifs\
-nb : si ./update_minix fait chier virer ce qu'il y a dans know_hosts ;)\
-cd /usr/src/tools\
+\cf4 nb : si ./update_minix fait chier virer ce qu'il y a dans know_hosts ;)\
+\cf0 cd /usr/src/tools\
 make hdboot libraries -> compiler\
 \
 \
+\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\
+\
+\cf4 LE TEST\
+\
+OK getpidinfo\
+J'ai chang\'e9 le > en un >= sur les ordis des salles. L'assistant a l'air de dire que c'est bien de mettre >= que ==.\
+\
+KO syscall\
+L'assistant trouve ca bizarre que quand on fait le syscall ca n'aille pas mais que quand on fait la m\'eame chose dans\
+l'appel syst\'e8me ca marche. Je pense qu'on peut se permettre de pas trop se tracasser sur ca, le but c'est que getpidinfo\
+marche. \cf0 \
 }
