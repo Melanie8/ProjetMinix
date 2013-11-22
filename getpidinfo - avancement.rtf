@@ -201,8 +201,8 @@ PUBLIC int getpidinfo(struct pid_s *pids)\
 	printf("m.m2_i1 %d\\n", m.m2_i1);\
 	printf("m.m2_i2 %d\\n", m.m2_i2);\
 \
-	printf("pids->me %d, pids.me %d\\n", pids->me, pids.me);\
-	printf("pids->parent %d, pids.parent %d\\n", pids->parent, pids.parent);\
+	printf("pids->me %d\\n", pids->me,);\
+	printf("pids->parent %d\\n", pids->parent);\
 \
   \}\
 \
@@ -227,19 +227,21 @@ Ajouter un fichier \cf2 getpidinfo.S\
 \
 IMPORT(_getpidinfo)\
 ENTRY(getpidinfo)\
-	jmp	_C_LABEL(_getpidinfo)\cf2 \CocoaLigature1 \
+	jmp	_C_LABEL(_getpidinfo)\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural
+\cf2 \CocoaLigature1 \
 \pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural
 \cf3 \
-\cf0 FICHIER : \cf2 ~/src/include/Makefile.inc\cf0 \
-Ajouter getpidinfo\'85\
+\cf0 FICHIER : \cf2 ~/src/lib/libc/Makefile.inc\cf0 \
+Ajouter \cf3 getpidinfo.S \\\cf0 \
 \
 \'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\
 \
 (dans le dossier o\'f9 se trouve minix)\
 make run\
-./update_minix \
+./update_minix -> inclure les modifs\
 cd /usr/src/tools\
-make hdboot libraries\
+make hdboot libraries -> compiler\
 \
 \
 }
