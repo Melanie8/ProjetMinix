@@ -1,9 +1,9 @@
-{\rtf1\ansi\ansicpg1252\cocoartf1265
+{\rtf1\ansi\ansicpg1252\cocoartf1187\cocoasubrtf400
 {\fonttbl\f0\fswiss\fcharset0 Helvetica;}
 {\colortbl;\red255\green255\blue255;\red63\green105\blue30;\red221\green32\blue103;\red168\green24\blue75;
 }
 {\info
-{\author Lena Peschke}}\paperw11900\paperh16840\margl1440\margr1440\vieww12600\viewh9600\viewkind0
+{\author Lena Peschke}}\paperw11905\paperh16837\margl1440\margr1440\vieww16880\viewh13080\viewkind0
 \pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\qc
 
 \f0\fs24 \cf0 Impl\'e9mentation de l\'92appel syst\'e8me getpidinfo\
@@ -11,8 +11,8 @@
 \cf0 \'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\
 \'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\
 \
-ssh identifiant@studssh.info.ucl.ac.be\
-[mot de passe]\
+ssh identifiant@studssh.info.ucl.ac.be (peschke)\
+[mot de passe] (beihau6Quo8v)\
 ssh volcan01\
 [mot de passe]\
 [se placer dans le r\'e9pertoire de minix]\
@@ -112,7 +112,7 @@ PUBLIC int do_getpidinfo()\
 \cf0 \
 A cette \'e9tape, il faut comprendre plusieurs choses. Le r\'e9pertoire pm/ contient full fichiers .h. Voici un aper\'e7u:\
 \
-glo.h : contient toutes les variables globales. C\'92est ici qu\'92est d\'e9clar\'e9 struct mproc *mp qui est la *table* du processus courant contenant toutes ses infos. Cette structure est d\'e9finie ailleurs, mais retenons que comme ell est d\'e9clar\'e9e externe ici, on ne doit plus la d\'e9clarer et la chercher pour notre appel.\
+glo.h : contient toutes les variables globales. C\'92est ici qu\'92est d\'e9clar\'e9 struct mproc *mp qui est la *table* du processus courant contenant toutes ses infos. Cette structure est d\'e9finie ailleurs, mais retenons que comme elle est d\'e9clar\'e9e externe ici, on ne doit plus la d\'e9clarer et la chercher pour notre appel.\
 \
 mproc.h : c\'92est ici que struct mproc *mp est d\'e9finie. Vaut la peine d\'92\'eatre lu. On se rend compte que c\'92est une table de structure qui contient tous les processus. mp (voir ci-dessus) pointe sur l\'92entr\'e9e du processus courant. A l\'92int\'e9rieur de la structure, on retrouve les champs pid_t mp_pid et int mp_parent qui donne respectivement le pid du processus et l\'92index dans mproc[NR_PROCS] de son parent. Autre chose d\'92important : message mp_reply. Pour comprendre ce champ, il faut savoir que tout appel syst\'e8me est appel\'e9 comme ceci : _syscall(PM_PROC_NR, PROC_NAME, &m); avec comme arguments la table qui donne les num\'e9ros au appels syst\'e8mes (je crois), le nom de l\'92appel syst\'e8me et le pointeur d\'92un message. mp_reply (le message) contient lui-m\'eame plusieurs champs.\
 Endroit de mp et de mproc[]!!!!!\
@@ -240,6 +240,7 @@ Ajouter \cf3 getpidinfo.S \\\cf0 \
 (dans le dossier o\'f9 se trouve minix)\
 make run\
 ./update_minix -> inclure les modifs\
+nb : si ./update_minix fait chier virer ce qu'il y a dans know_hosts ;)\
 cd /usr/src/tools\
 make hdboot libraries -> compiler\
 \
