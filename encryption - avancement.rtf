@@ -52,12 +52,13 @@ Voil\'e0 ce que j'ai pu retirer de ma discussion avec Michael! Maintenant il va 
 \
 PROGRAMMATION\
 \'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\
-copier mount.c dans le dossier de test -> va falloir changer les paths dedans\
-rajouter l'option -e\
+copier mount.c (src/servers/vfs ou/et? mfs/mount.c) dans le dossier de test -> va falloir changer les paths dedans\
+faire en sorte que l'option -e soit support\'e9e (j'imagine que les options se mettent par d\'e9faut \'e0 un endroit bien pr\'e9cis dans le\
+message et qu'il va juste falloir faire un b\'eate if :))\
 \
-j'imagine qu'il va falloir rajouter un flag dans la structure de donn\'e9es relative au file system qui dit si on est mode crypt\'e9 ou pas\
+il va surement falloir rajouter un flag dans la structure de donn\'e9es relative au file system (le superblock)\
+qui dit si on est mode crypt\'e9 ou pas\
 \
-il va falloir adapter le code de cat (on va peut-\'eatre pouvoir se baser sur ce qu'on a fait l'ann\'e9e pass\'e9e!)\
-\
-j'avoue que je me demande clairement en quoi le fait d'avoir fait getpidinfo va nous aider ici\'85 je vois pas quand on devrait faire un \
-nouvel appel syst\'e8me en tout cas}
+il va falloir adapter du code pour que tout soit crypt\'e9 et d\'e9crypt\'e9 quand il faut (pas juste dans cat!)\
+j'imagine que c'est l\'e0 qu'il va falloir toucher au vfs/mfs\
+et qu'on devra peut-\'eatre cr\'e9er de nouveaux appels syst\'e8me}
